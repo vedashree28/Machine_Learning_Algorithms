@@ -1,0 +1,92 @@
+package com.bagging;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.ArrayList;
+
+public class ReadFile {
+
+	public static void main(String[] args) {
+		/*
+		 * T This function contains the code for reading the training and
+		 * testing file
+		 */
+		ArrayList<String> attributeList = new ArrayList<String>(); // Intialize
+		// the
+		// variables
+		ArrayList<Integer> maxAttributeCount = new ArrayList<Integer>();
+		ArrayList<DataPoint> dataIn = new ArrayList<DataPoint>();
+		//ArrayList calculated_entropy=new ArrayList();
+		ArrayList<DataPoint> databt = new ArrayList<DataPoint>();
+		ArrayList<Integer> Temp = new ArrayList<Integer>();
+		ArrayList<Integer> Expected =new ArrayList<Integer>();
+		int count = 0;
+		int no_of_classifiers=90;
+		String instances = "";
+		try {
+			// Use Buffered read to read files
+			BufferedReader reader = new BufferedReader(new FileReader("train-3.dat"));//training file
+			instances = reader.readLine();
+			String[] parts = instances.split("\\s"); // split based on \t single
+			// space
+			int lengthofip=0;
+			lengthofip=parts.length/2;
+			for (int i = 0; i < (lengthofip+1); i++) { 
+				// store the value and name ofattributes in two arrays
+				attributeList.add(parts[count++]);
+				// maxAttributeCount.add(Integer.parseInt(parts[count++]));
+				maxAttributeCount.add(i);
+			}
+			while ((instances = reader.readLine()) != null) {
+				parts = instances.split("\\s");
+				for (int i = 0; i < (lengthofip+1); i++) {
+					//parse the data according to spaces
+					Temp.add(Integer.parseInt(parts[i]));
+				}
+
+				dataIn.add(new DataPoint(Temp, Temp.get(Temp.size() - 1)));
+				Temp = new ArrayList<Integer>();
+			}
+			
+			attributeList = new ArrayList<String>();
+			maxAttributeCount = new ArrayList<Integer>();
+			Temp = new ArrayList<Integer>();
+
+			// --------Testingdata--------------------------------------
+
+			BufferedReader reader1 = new BufferedReader(new FileReader("test-3.dat"));//testing file
+			// args[1] is testing file
+			instances = reader1.readLine();
+			String[] parts1 = instances.split("\\s");
+			while ((instances = reader1.readLine()) != null) {
+				parts1 = instances.split("\\s");
+				for (int i = 0; i < (lengthofip+1); i++) {
+					Temp.add(Integer.parseInt(parts1[i]));
+					
+				}
+				Expected.add(Temp.get(lengthofip));
+				databt.add(new DataPoint(Temp, Temp.get(Temp.size() - 1)));
+				Temp = new ArrayList<Integer>();
+			}
+			double hit=0;
+			double accuracy=0.0;
+			DecisionTree  d1= new DecisionTree(dataIn,databt,maxAttributeCount,no_of_classifiers);
+			ArrayList<Integer> calculated_entropy=d1.calcBaggingAccuracy();
+			//System.out.println("Calculated_Entropy"+calculated_entropy);
+			//System.out.println("Expected Entropy"+Expected);
+			for(int i=0;i<databt.size();i++){
+				if(calculated_entropy.get(i)==Expected.get(i)){
+					hit =hit+1;
+				}
+			}
+			double size=databt.size();
+			accuracy=hit/size*100;
+			System.out.println("Accuracy "+accuracy);
+			reader.close();
+		}
+		catch(Exception e){
+			System.out.println("Error"+e);
+		}
+	}
+
+}
